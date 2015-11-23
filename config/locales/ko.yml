@@ -1,0 +1,6 @@
+
+ko:
+  dojo_create: "개설자는 실습 공간을 생성하세요 (choose a language, a test framework, and an exercise)"
+  dojo_type_kataid: "나머지 참가자들은 개설자가<br/> 생성한 실습공간 id를 입력하세요."
+  dojo_enter: "실습을 시작하려면<br/> enter를 클릭하세요."
+  dojo_review: "실습이 완료되면 dashboard를 열어 다같이 review를 하세요."

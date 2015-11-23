@@ -1,0 +1,6 @@
+
+en:
+  dojo_create: "create your cyber-dojo (choose a language, a test framework, and an exercise)"
+  dojo_type_kataid: "type in your cyber-dojo's id in <span class=\"each\">each</span> browser"
+  dojo_enter: "click enter in<br/> <span class=\"each\">each</span> browser<br/> to start coding"
+  dojo_review: "stop coding, open the dashboard to review everyone's code"
