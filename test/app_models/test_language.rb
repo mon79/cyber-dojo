@@ -1,13 +1,14 @@
 #!/bin/bash ../test_wrapper.sh
 
-require_relative './app_model_test_base'
+require_relative './app_models_test_base'
 require 'tempfile'
 
-class LanguageTests < AppModelTestBase
+class LanguageTests < AppModelsTestBase
 
   def setup
     super
-    set_languages_root(tmp_root + 'languages')
+    set_languages_root(tmp_root + 'languages/')
+    disk[languages.path].make
   end
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,7 +70,7 @@ class LanguageTests < AppModelTestBase
     @language = make_language('C#', 'NUnit')
     filename = 'test_untitled.cs'
     spy_manifest({ 'visible_filenames' => [filename] })
-    dir_of(@language).write(filename, 'content')
+    disk[@language.path].write(filename, 'content')
     visible_files = @language.visible_files
     assert_equal({ filename => 'content' }, visible_files)
     assert_nil visible_files['output']
@@ -225,32 +226,20 @@ class LanguageTests < AppModelTestBase
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  test '397AB2',
-  'language.runnable? delegates to runner' do
-    runner.stub_runnable(true)
-    @language = make_language('Ruby', 'Test::Unit')
-    assert @language.runnable?
-    runner.stub_runnable(false)
-    refute @language.runnable?
-  end
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   test 'CF389F',
-  'bad JSON in manifest raises exception naming the language' do
-    set_disk_class('DiskFake')
-    @language = make_language('Ruby', 'TestUnit')
-    @language.dir.make
-    @language.dir.write(manifest_filename, any_bad_json = '42')
-    @language.refresh_cache
+  'bad JSON in manifest raises exception naming the language+test' do
+    @language = make_language(ruby='Ruby', test_unit='TestUnit')
+    dir = disk[@language.path]
+    dir.make
+    dir.write(manifest_filename, any_bad_json = '42')
     message = ''
     begin
       @language.tab_size
     rescue StandardError => ex
       message = ex.message
     end
-    assert message.include?('Ruby'), message
-    assert message.include?('TestUnit'), message
+    assert message.include?(ruby), message
+    assert message.include?(test_unit), message
   end
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -262,8 +251,9 @@ class LanguageTests < AppModelTestBase
   end
 
   def spy_manifest(manifest)
-    dir_of(@language).make
-    dir_of(@language).write_json(manifest_filename, manifest)
+    dir = disk[@language.path]
+    dir.make
+    dir.write_json(manifest_filename, manifest)
   end
 
   def manifest_filename

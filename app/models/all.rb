@@ -1,7 +1,8 @@
 
 %w(
-  external_parent_chain
+  name_of_caller
   manifest_property
+
   dojo
   caches
   language
@@ -9,11 +10,9 @@
   languages
   exercise
   exercises
-  update_cyber_dojo_sh
+  kata
   avatar
   avatars
-  kata
-  katas
   sandbox
   tag
 ).each { |sourcefile| require_relative './' + sourcefile }

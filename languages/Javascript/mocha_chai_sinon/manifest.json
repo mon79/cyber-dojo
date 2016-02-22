@@ -1,11 +1,12 @@
 {
   "visible_filenames": [
+    "hikerTest.js",
     "crib_chai.txt",
     "crib_sinon.txt",
-    "hikerTest.js",
     "hiker.js",
     "config.js",
-    "cyber-dojo.sh"
+    "cyber-dojo.sh",
+    ".jshintrc"
   ],
   "filename_extension" : ".js",
   "display_name": "Javascript, Mocha+chai+sinon",

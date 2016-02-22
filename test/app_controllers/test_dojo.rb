@@ -1,18 +1,8 @@
 #!/bin/bash ../test_wrapper.sh
 
 require_relative './app_controller_test_base'
-require_relative './rails_git_spy_thread_adapter'
 
 class DojoControllerTest < AppControllerTestBase
-
-  def setup
-    super
-    # using HostGit is too memory hungry on ram-disk
-    set_git_class('RailsGitSpyThreadAdapter')
-    RailsGitSpyThreadAdapter.reset
-  end
-
-  #- - - - - - - - - - - - - - - -
 
   test 'BF7103',
   'index without id' do
@@ -53,24 +43,24 @@ class DojoControllerTest < AppControllerTestBase
   #- - - - - - - - - - - - - - - -
 
   test 'AF2F15',
-  'enter with no id raises' do
-    assert_raises { enter }
+  'start with no id raises' do
+    assert_raises { start }
   end
 
   #- - - - - - - - - - - - - - - -
 
   test '9AFB84',
-  'enter with empty string id raises' do
+  'start with empty string id raises' do
     @id = ''
-    assert_raises { enter }
+    assert_raises { start }
   end
 
   #- - - - - - - - - - - - - - - -
 
   test 'E16A79',
-  'enter with id that does not exist raises' do
+  'start with id that does not exist raises' do
     @id = 'ab00ab11ab'
-    assert_raise { enter }
+    assert_raise { start }
   end
 
   #- - - - - - - - - - - - - - - -
@@ -78,7 +68,7 @@ class DojoControllerTest < AppControllerTestBase
   test '812BEE',
   'enter with id that does exist => !full,avatar_name' do
     create_kata
-    enter
+    start
     refute empty?
     refute full?
     assert Avatars.names.include?(@avatar.name)
@@ -90,22 +80,23 @@ class DojoControllerTest < AppControllerTestBase
   'enter succeeds once for each avatar name, then dojo is full' do
     create_kata
     Avatars.names.each do |avatar_name|
-      enter
+      start
       refute full?
+      assert Avatars.names.include? json['avatar_name']
       assert_not_nil @avatar.name
     end
-    enter_full
+    start_full
     refute empty?
     assert full?
-    assert_nil json['avatar_name']
+    assert_equal '', json['avatar_name']
   end
 
   #- - - - - - - - - - - - - - - -
 
   test '3B15BD',
-  're_enter with id that exists but is empty' do
+  'continue with id that exists but is empty' do
     create_kata
-    re_enter
+    continue
     assert empty?
     refute full?
   end
@@ -113,10 +104,10 @@ class DojoControllerTest < AppControllerTestBase
   #- - - - - - - - - - - - - - - -
 
   test 'CFFDEB',
-  're_enter with id that exists and is not empty' do
+  'continue with id that exists and is not empty' do
     create_kata
-    enter
-    re_enter
+    start
+    continue
     refute empty?
     refute full?
   end
@@ -125,7 +116,7 @@ class DojoControllerTest < AppControllerTestBase
 
   def check_id
     params = { :format => :json, :id => @id }
-    get 'dojo/check', params
+    get 'enter/check', params
     assert_response :success
   end
 

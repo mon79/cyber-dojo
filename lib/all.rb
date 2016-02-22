@@ -2,21 +2,32 @@
 # this list has order dependencies
 
 %w{
+  external_parent_chainer
+  external_dir
+
+  time_now
+  unique_id
   id_splitter
-  Stderr2Stdout
   string_cleaner
-  bash
-  background_process
+  string_truncater
+  slashed
+  stderr_redirect
+  languages_display_names_splitter
+
   runner
-    docker_times_out_runner
-    docker_runner
-    host_runner
+  stub_runner
+  docker_runner
+  docker_tmp_runner
+  docker_katas_runner
+  docker_machine_runner
+  docker_data_container_runner
+
+  create_kata_manifest
+  host_disk_katas
+
+  host_shell
   host_disk
   host_dir
   host_git
-  time_now
-  unique_id
-  languages_display_names_splitter
-  one_self_dummy
-  curl_one_self
+  host_log
 }.each { |sourcefile| require_relative './' + sourcefile }

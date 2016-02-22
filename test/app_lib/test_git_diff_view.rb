@@ -7,7 +7,7 @@ class GitDiffViewTests < AppLibTestBase
   include GitDiff
 
   test '836292',
-  'example' do
+  'simple example going from red to green' do
     diffs =
     {
       'hiker.rb' =>
@@ -46,6 +46,26 @@ class GitDiffViewTests < AppLibTestBase
       }
     ]
     assert_equal expected_view, view
+  end
+
+  # - - - - - - - - - - - - - - - - - -
+
+  private
+
+  def one_line(content)
+    [ { :line => content, :type => :same, :number => 1 } ]
+  end
+
+  def one_line_expected(n, filename, content)
+    {
+      :id => 'id_' + n.to_s,
+      :filename => filename,
+      :section_count => 0,
+      :deleted_line_count => 0,
+      :added_line_count => 0,
+      :content => '<same>' + content + '</same>',
+      :line_numbers => '<same><ln>1</ln></same>'
+    }
   end
 
 end

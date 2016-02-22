@@ -1,8 +1,8 @@
 #!/bin/bash ../test_wrapper.sh
 
-require_relative './app_model_test_base'
+require_relative './app_models_test_base'
 
-class LanguagesTests < AppModelTestBase
+class LanguagesTests < AppModelsTestBase
 
   test '71C327',
   'languages[name] is nil if name is not an existing language' do
@@ -13,7 +13,7 @@ class LanguagesTests < AppModelTestBase
 
   test '743810',
   'languages path has correct format when set with trailing slash' do
-    path = 'slashed/'
+    path = tmp_root + 'slashed/'
     set_languages_root(path)
     assert_equal path, languages.path
     assert correct_path_format?(languages)
@@ -23,7 +23,7 @@ class LanguagesTests < AppModelTestBase
 
   test '8D3BB5',
   'languages path has correct format when set without trailing slash' do
-    path = 'unslashed'
+    path = tmp_root + 'unslashed'
     set_languages_root(path)
     assert_equal path + '/', languages.path
     assert correct_path_format?(languages)
@@ -31,70 +31,42 @@ class LanguagesTests < AppModelTestBase
 
   #- - - - - - - - - - - - - - - - - - - - -
 
+  test '8D0EBB',
+  'refresh_cache ignores nested _docker_context folder because' +
+    ' it is not the name of a test-framework, it is the docker-context' +
+    ' for the language itself' do
+    set_caches_root_tmp
+    n = 0
+    languages.each do |language|
+      n += 1
+      refute language.path.include? '_docker_context'
+    end
+    assert n > 45
+  end
+
+  #- - - - - - - - - - - - - - - - - - - - -
+
   test '7D53C5',
-  'refresh_cache requires manifest.json for each file to read display_name from' +
-    ' but use of cached info does not reaccess manifest.json' do
-    set_disk_class('DiskFake')
-
-    dir_name = 'g++4.8.4'
-    test_dir_name = 'assert'
-    cpp_assert = Language.new(languages, dir_name, test_dir_name)
-    language_display_name = 'C++ (g++)'
-    display_name = language_display_name + ', ' + test_dir_name
-    image_name = 'cyberdojofoundation/gpp-4.8.4_assert'
-    manifest_filename = 'manifest.json'
-    dir_of(cpp_assert).make
-    dir_of(cpp_assert).write_json(manifest_filename, {
-      'display_name' => display_name,
-      'image_name'   => image_name
-    })
-
-    refute disk[caches.path].exists?(Languages.cache_filename)
-    languages.refresh_cache
-    assert disk[caches.path].exists?(Languages.cache_filename)
-
-    dir_of(cpp_assert).delete(manifest_filename) # DiskFake.delete is implemented
-
-    languages_names = languages.map(&:name).sort
-    assert_equal [language_display_name + '-' + test_dir_name], languages_names
-    # get from cache
-    cpp_assert = languages[language_display_name + '-' + test_dir_name]
-    assert_equal display_name, cpp_assert.display_name
-    assert_equal image_name,   cpp_assert.image_name
-
-  end
-
-  #- - - - - - - - - - - - - - - - - - - - -
-
-  test '15BD19',
-  'no languages when cache is empty' do
-    set_disk_class('DiskFake')
-    caches.write_json(cache_filename, {})
-    dir_of(languages).write_json(cache_filename, {})
-    assert_equal [], languages.to_a
-  end
-
-  #- - - - - - - - - - - - - - - - - - - - -
-
-  test '09A1D4',
-  'languages from cache when cache is not empty' do
-    set_disk_class('DiskFake')
+  'use of cached info does *not* reaccess manifest.json' do
+    set_caches_root_tmp
+    display_name = 'Not, There'
+    image_name = 'cyberdojofoundation/not_there'
     cache = {
-      'Asm, assert' => {
-             dir_name: 'Asm',
-        test_dir_name: 'assert'
+       display_name => {
+             dir_name: 'Not',
+        test_dir_name: 'There',
+           image_name: image_name
       },
-      'C++ (g++), assert' => {
-             dir_name: 'g++4.8.4',
-        test_dir_name: 'assert'
-      }
     }
     caches.write_json(cache_filename, cache)
-    languages_names = languages.map(&:name).sort
 
-    assert_equal ['Asm-assert', 'C++ (g++)-assert'], languages_names
-    assert_equal 'Asm, assert', languages['Asm-assert'].display_name
-    assert_equal 'C++ (g++), assert', languages['C++ (g++)-assert'].display_name
+    not_there = languages['Not-There']
+    refute_nil not_there
+    dir = disk[not_there.path]
+    refute dir.exists?
+
+    assert_equal display_name, not_there.display_name
+    assert_equal image_name, not_there.image_name
   end
 
   #- - - - - - - - - - - - - - - - - - - - -
@@ -118,7 +90,7 @@ class LanguagesTests < AppModelTestBase
   #- - - - - - - - - - - - - - - - - - - - -
 
   test '083518',
-  '[name] when  of lang-test where lang,_test is valid display_name' do
+  '[name] when lang-test where lang,_test is valid display_name' do
     simple_case = 'C++ (g++)-assert'
     simple_display_name = 'C++ (g++), assert'
     found = languages.find { |language| language.display_name == simple_display_name }
@@ -132,7 +104,7 @@ class LanguagesTests < AppModelTestBase
   '[name] when name has no - and was renamed' do
     [
        # from way back when test name was not part of language name
-      'BCPL', 'C', 'C++', 'C#', 'Clojure', 'CoffeeScript','Erlang','Go',
+      'BCPL', 'C', 'C++', 'C#', 'CoffeeScript','Erlang','Go',
       'Haskell', 'Java', 'Javascript', 'Perl', 'PHP', 'Python', 'Ruby', 'Scala',
     ].each { |name| refute_nil languages[name], name }
   end
@@ -215,8 +187,8 @@ class LanguagesTests < AppModelTestBase
       'C++-assert 1015 545111471C',
       'C-Unity 450 5498403AF6',
       'C-assert 836 54B99F4CE2',
-      'Clojure 67 5A53D42987',
-      'Clojure-.test 177 546B4184B4',
+      #'Clojure 67 5A53D42987',          # offline
+      #'Clojure-.test 177 546B4184B4',   # offline
       'CoffeeScript 47 014F4190E0',
       'CoffeeScript-jasmine 83 54219ECA71',
       'D-unittest 45 541349CE61',
@@ -279,7 +251,11 @@ class LanguagesTests < AppModelTestBase
   end
 
   def cache_filename
-    Languages.cache_filename
+    'languages_cache.json'
+  end
+
+  def set_caches_root_tmp
+    set_caches_root(tmp_root + 'caches')
   end
 
 end

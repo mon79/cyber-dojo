@@ -1,24 +1,37 @@
 
 class Avatars
+  include Enumerable
 
   def self.names
-    %w(alligator buffalo cheetah deer
-       elephant frog gorilla hippo
-       koala lion moose panda
-       raccoon snake wolf zebra
+    %w(alligator antelope   bat     bear     bee      beetle       buffalo   butterfly
+       cheetah   crab       deer    dolphin  eagle    elephant     flamingo  fox
+       frog      gopher     gorilla heron    hippo    hummingbird  hyena     jellyfish
+       kangaroo  kingfisher koala   leopard  lion     lizard       lobster   moose
+       mouse     ostrich    owl     panda    parrot   peacock      penguin   porcupine
+       puffin    rabbit     raccoon ray      rhino    salmon       seal      shark
+       skunk     snake      spider  squid    squirrel starfish     swan      tiger
+       toucan    tuna       turtle  vulture  walrus   whale        wolf      zebra
     )
   end
 
   def initialize(kata)
-    @parent = kata
+    @kata = kata
+  end
+
+  # queries
+
+  attr_reader :kata
+
+  def parent
+    kata
   end
 
   def each(&block)
-    avatars.values.each(&block)
+    started_avatars.values.each(&block)
   end
 
   def [](name)
-    avatars[name]
+    started_avatars[name]
   end
 
   def active
@@ -31,19 +44,11 @@ class Avatars
 
   private
 
-  include Enumerable
-  include ExternalParentChain
+  include ExternalParentChainer
 
-  def avatars
-    # Could do disk[kata.path].exists?('started_avatars.json')
-    # and use that if it exists. When number of avatars increases
-    # that will become more important
-    all = {}
-    Avatars.names.each do |name|
-      avatar = Avatar.new(@parent, name)
-      all[name] = avatar if disk[avatar.path].exists?
-    end
-    all
+  def started_avatars
+    names = katas.kata_started_avatars(kata)
+    Hash[names.map { |name| [name, Avatar.new(kata, name)] }]
   end
 
 end

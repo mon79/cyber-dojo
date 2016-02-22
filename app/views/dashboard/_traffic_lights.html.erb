@@ -3,21 +3,20 @@
 
 $(function() {
 
-  var dashboard = $('#dashboard-page');
-  var lights = $('.diff-traffic-light', dashboard);
-  var showRevert = false;
+  $('.diff-traffic-light').click(function() {
+    var light = $(this);
+    var id         = light.data('id');
+    var avatarName = light.data('avatar-name');
+    var wasTag     = light.data('was-tag');
+    var nowTag     = light.data('now-tag');
+    window.open(cd.showReviewUrl(id, avatarName, wasTag, nowTag));
+  });
 
-  cd.setupTrafficLightOpensHistoryDialogHandlers(lights,showRevert);
-
-  var bulbCounts = $('#traffic-lights .traffic-light-count', dashboard);
-
-  cd.setupTrafficLightCountOpensCurrentCode(bulbCounts,showRevert);
-
-  cd.pieChart($('#traffic-lights .pie', dashboard));
-  cd.setupHoverTips();
+  cd.pieChart($('#traffic-lights .pie'));
+  cd.setupHoverTip($('[data-tip]'));
 
   var allTheWay = 100000;
-  $('#traffic-lights', dashboard).scrollLeft(allTheWay);
+  $('#traffic-lights').scrollLeft(allTheWay);
 
 });
 
@@ -38,15 +37,15 @@ $(function() {
 		  <% end %>
 		  <% if td.class == Array %>
 		    <% if td.length == 0 %>
-			  <div class="gap"></div>
+			    <div class="gap"></div>
 		    <% else %>
-			  <table>
-			    <tr>
-				  <% td.each do |light| %>
-				    <td><%= raw diff_traffic_light(light) %></td>
-				  <% end %>
-			    </tr>
-			  </table>
+          <table align="right">
+            <tr>
+				    <% td.each do |light| %>
+              <td><%= raw diff_traffic_light(light) %></td>
+            <% end %>
+            </tr>
+          </table>
 		    <% end %>
 		  <% end %>
 		  </td>

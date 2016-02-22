@@ -3,65 +3,94 @@
 var cyberDojo = (function(cd, $) {
   "use strict";
 
-  var setHoverTip = function(node,tip) {
-    // mouseenter retrieves the tip via a slow ajax call
+  var showTrafficLightHoverTipViaAjax = function(light) {
+    $.getJSON('/tipper/traffic_light_tip', {
+           id: light.data('id'),
+       avatar: light.data('avatar-name'),
+      was_tag: light.data('was-tag'),
+      now_tag: light.data('now-tag')
+    }, function(response) {
+      cd.showHoverTip(light, response.html);
+    });
+  };
+
+  // - - - - - - - - - - - - - - - - - - - -
+
+  var countHoverTipHtml = function(reds, ambers, greens, timeOuts) {
+    var colourWord = function(colour, word) {
+      return "<span class='" + colour + "'>" + word + '</span>';
+    };
+    var plural = function(count, colour) {
+      var word = colour + (count == 1 ? '' : 's');
+      return '<div>' + count + ' ' + colourWord(colour, word) + '</div>';
+    };
+    var html = '';
+    if (reds     > 0) { html += plural(reds    , 'red'    ); }
+    if (ambers   > 0) { html += plural(ambers  , 'amber'  ); }
+    if (greens   > 0) { html += plural(greens  , 'green'  ); }
+    if (timeOuts > 0) { html += plural(timeOuts, 'timeout'); }
+    return html;
+  };
+
+  // - - - - - - - - - - - - - - - - - - - -
+
+  var getTrafficLightCountHoverTip = function(node) {
+    var avatarName = node.data('avatar-name');
+    var reds = node.data('red-count');
+    var ambers = node.data('amber-count');
+    var greens = node.data('green-count');
+    var timeOuts = node.data('timed-out-count');
+    return avatarName + ' has<br/>' + countHoverTipHtml(reds, ambers, greens, timeOuts);
+  };
+
+  // - - - - - - - - - - - - - - - - - - - -
+
+  cd.setupHoverTip = function(nodes) {
+    nodes.each(function() {
+      var node = $(this);
+      var tip = node.data('tip');
+      var setTipCallBack = function() {
+        if (tip == 'ajax:traffic_light') {
+          showTrafficLightHoverTipViaAjax(node);
+        } else if (tip == 'traffic_light_count') {
+          cd.showHoverTip(node, getTrafficLightCountHoverTip(node));
+        } else {
+          cd.showHoverTip(node, tip);
+        }
+      };
+      cd.setTip(node, setTipCallBack);
+    });
+  };
+
+  // - - - - - - - - - - - - - - - - - - - -
+
+  cd.setTip = function(node, setTipCallBack) {
+    node.mouseenter(function() {
+      node.removeClass('mouse-has-left');
+      setTipCallBack();
+    });
+    node.mouseleave(function() {
+      node.addClass('mouse-has-left');
+      $('.hover-tip', node).remove();
+    });
+  };
+
+  // - - - - - - - - - - - - - - - - - - - -
+
+  cd.showHoverTip = function(node, tip) {
+    // mouseenter may retrieve the tip via a slow ajax call
     // which means mouseleave could have already occurred
     // by the time the ajax returns to set the tip. The
-    // mouse-has-left attribute minimizes this race's chance.
+    // mouse-has-left attribute reduces this race's chance.
     if (!node.hasClass('mouse-has-left')) {
       node.append($('<span class="hover-tip">' + tip + '</span>'));
       // dashboard auto-scroll requires forced positioning.
       $('.hover-tip').position({
         my: 'left top',
         at: 'right bottom',
-        of: node });
+        of: node
+      });
     }
-  };
-
-  var setAjaxTrafficLightHoverTip = function(light) {
-    $.getJSON('/tipper/traffic_light_tip', {
-      id: light.data('id'),
-      avatar: light.data('avatar-name'),
-      was_tag: light.data('was-tag'),
-      now_tag: light.data('now-tag')
-    }, function(response) {
-      setHoverTip(light,response.html);
-    });
-  };
-
-  var setAjaxTrafficLightCountHoverTip = function(node) {
-    $.getJSON('/tipper/traffic_light_count_tip', {
-      avatar: node.data('avatar-name'),
-      bulb_count: node.data('bulb-count'),
-      current_colour: node.data('current-colour'),
-      red_count: node.data('red-count'),
-      amber_count: node.data('amber-count'),
-      green_count: node.data('green-count'),
-      timed_out_count: node.data('timed-out-count')
-    }, function(response) {
-      setHoverTip(node,response.html);
-    });
-  };
-
-  cd.setupHoverTips = function() {
-    $('[data-tip]').each(function() {
-      var node = $(this);
-      var tip = node.data('tip');
-      node.mouseleave(function() {
-        node.addClass('mouse-has-left');
-        $('.hover-tip',node).remove();
-      });
-      node.mouseenter(function() {
-        node.removeClass('mouse-has-left');
-        if (tip === 'ajax:traffic_light') {
-          setAjaxTrafficLightHoverTip(node);
-        } else if (tip === 'ajax:traffic_light_count') {
-          setAjaxTrafficLightCountHoverTip(node);
-        } else {
-          setHoverTip(node,tip);
-        }
-      });
-    });
   };
 
   return cd;

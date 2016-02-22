@@ -1,20 +1,12 @@
 #!/bin/bash ../test_wrapper.sh
 
-require_relative './app_model_test_base'
+require_relative './app_models_test_base'
 
-class AvatarsTests < AppModelTestBase
+class AvatarsTests < AppModelsTestBase
 
   test '631149',
-  'there are 16 avatar names' do
-    assert_equal 16, Avatars.names.length
-  end
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  test 'E7A60F',
-  'avatars names all begin with a different letter' do
-    first_letters = Avatars.names.collect { |name| name[0] }.uniq
-    assert_equal first_letters.length, Avatars.names.length
+  'there are 64 avatar names' do
+    assert_equal 64, Avatars.names.length
   end
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -30,9 +22,11 @@ class AvatarsTests < AppModelTestBase
   test 'B85F79',
   'avatars returns all avatars started in the kata' do
     kata = make_kata
+    assert_equal [], kata.avatars.names.sort
     kata.start_avatar([cheetah])
+    assert_equal [cheetah], kata.avatars.names.sort
     kata.start_avatar([lion])
-    assert_equal [cheetah, lion], kata.avatars.map(&:name).sort
+    assert_equal [cheetah, lion], kata.avatars.names
   end
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,7 +36,7 @@ class AvatarsTests < AppModelTestBase
     kata = make_kata
     kata.start_avatar([cheetah])
     kata.start_avatar([lion])
-    assert_equal [cheetah, lion], kata.avatars.map(&:name).sort
+    assert_equal [cheetah, lion], kata.avatars.names.sort
     assert_equal 2, kata.avatars.to_a.length
   end
 
@@ -68,7 +62,7 @@ class AvatarsTests < AppModelTestBase
   'avatars[panda] is the panda when the panda has started' do
     kata = make_kata
     kata.start_avatar([panda])
-    assert_equal [panda], kata.avatars.map(&:name)
+    assert_equal [panda], kata.avatars.names
     assert_equal panda, katas[kata.id.to_s].avatars[panda].name
   end
 
@@ -80,8 +74,8 @@ class AvatarsTests < AppModelTestBase
     kata.start_avatar([lion])
     kata.start_avatar([hippo])
     expected_names = [lion, hippo]
-    names = kata.avatars.map(&:name)
-    assert_equal expected_names.sort, names.sort
+    actual_names = kata.avatars.names
+    assert_equal expected_names.sort, actual_names.sort
   end
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -1,5 +1,5 @@
 
-ENV['RAILS_ENV'] = 'test' # ????
+ENV['RAILS_ENV'] = 'test'
 
 gem 'minitest'
 require 'minitest/autorun'
@@ -22,20 +22,14 @@ class AppControllerTestBase < ActionDispatch::IntegrationTest
   include TestHexIdHelpers
   include TestTmpRootHelpers
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   def setup
     super
-    `rm -rf #{tmp_root}/*`
-    `rm -rf #{tmp_root}/.git`
-    `mkdir -p #{tmp_root}`
-    set_katas_root(tmp_root + 'katas')
-    set_one_self_class('OneSelfDummy')
+    set_runner_class('StubRunner')
   end
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  def create_kata(language_name = random_language, exercise_name = random_exercise)
+  def create_kata(language_name = default_language, exercise_name = default_exercise)
     parts = language_name.split(',')
     params = {
       language: parts[0].strip,
@@ -46,9 +40,9 @@ class AppControllerTestBase < ActionDispatch::IntegrationTest
     @id = json['id']
   end
 
-  def enter
+  def start
     params = { :format => :json, :id => @id }
-    get 'dojo/enter', params
+    get 'enter/start', params
     assert_response :success
     avatar_name = json['avatar_name']
     assert_not_nil avatar_name
@@ -57,15 +51,15 @@ class AppControllerTestBase < ActionDispatch::IntegrationTest
     @avatar
   end
 
-  def enter_full
+  def start_full
     params = { :format => :json, :id => @id }
-    get 'dojo/enter', params
+    get 'enter/start', params
     assert_response :success
   end
 
-  def re_enter
+  def continue
     params = { :format => :json, :id => @id }
-    get 'dojo/re_enter', params
+    get 'enter/continue', params
     assert_response :success
   end
 
@@ -94,19 +88,6 @@ class AppControllerTestBase < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  def stub_test_output(rag)
-    # todo: refactor
-    #       copied from test/TestHelpers.rb stub_test_colours (private)
-    disk = HostDisk.new
-    root = File.expand_path(File.dirname(__FILE__) + '/..') + '/app_lib/test_output'
-    assert [:red,:amber,:green].include? rag
-    path = "#{root}/#{@avatar.kata.language.unit_test_framework}/#{rag}"
-    all_outputs = disk[path].each_file.collect{|filename| filename}
-    filename = all_outputs.shuffle[0]
-    output = disk[path].read(filename)
-    dojo.runner.stub_output(output)
-  end
-
   def json
     ActiveSupport::JSON.decode html
   end
@@ -117,15 +98,12 @@ class AppControllerTestBase < ActionDispatch::IntegrationTest
 
   private
 
-  def random_language
-    # languages.collect....
-    # will cause TestRunner.runnable?() to be executed...
-    # which means I can't later Stub a different TestRunner...
-    'Ruby, TestUnit'  # todo
+  def default_language
+    'Ruby, TestUnit'
   end
 
-  def random_exercise
-    'Yatzy' # todo
+  def default_exercise
+    'Yatzy'
   end
 
 end

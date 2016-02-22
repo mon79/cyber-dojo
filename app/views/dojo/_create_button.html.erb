@@ -5,8 +5,8 @@ $(function() {
 
   $('#create-button').click(function() {
     cd.dialog_ie(function() {
-      var id = $('#kata-id-input').val();
-      var url = '/setup/show/' + id;
+      var id = "<%= @id %>";
+      var url = '/setup/show_languages_and_tests/' + id;
       window.location = url;
     });
   });
@@ -15,4 +15,4 @@ $(function() {
 
 //--></script>
 
-<button type="button" id="create-button">create</button>
+<button type="button" id="create-button">create a practice session</button>

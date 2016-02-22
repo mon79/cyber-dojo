@@ -31,7 +31,7 @@ class TrafficLightTests < AppHelpersTestBase
       end
     expected =
       "<div class='traffic-light-count amber'" +
-          " data-tip='ajax:traffic_light_count'" +
+          " data-tip='traffic_light_count'" +
           " data-id='ABCD1234'" +
           " data-avatar-name='hippo'" +
           " data-current-colour='amber'" +
@@ -49,10 +49,10 @@ class TrafficLightTests < AppHelpersTestBase
 
   test '94DE41',
   'traffic_light_image' do
-    color = 'red'
-    expected = "<img src='/images/bulb_#{color}.png'" +
+    colour = 'red'
+    expected = "<img src='/images/bulb_#{colour}.png'" +
                " alt='red traffic-light'/>"
-    actual = traffic_light_image(color)
+    actual = traffic_light_image(colour)
     assert_equal expected, actual
   end
 
@@ -81,6 +81,29 @@ class TrafficLightTests < AppHelpersTestBase
 
   #- - - - - - - - - - - - - - - -
 
+  test 'E15E77',
+  'simple_diff_traffic_light' do
+    avatar = Avatar.new(Object.new, 'hippo')
+    light = Tag.new(avatar, {
+      'number' => (tag = 3),
+      'colour' => (colour = 'red')
+    })
+    expected = '' +
+      '<div' +
+      " class='diff-traffic-light'" +
+      " data-tip='simple_review_traffic_light'" +
+      " data-colour='#{colour}'" +
+      " data-was-tag='#{tag - 1}'" +
+      " data-now-tag='#{tag}'>" +
+      "<img src='/images/bulb_#{colour}.png'" +
+          " alt='#{colour} traffic-light'/>" +
+      '</div>'
+    actual = simple_diff_traffic_light(light)
+    assert_equal expected, actual
+  end
+
+  #- - - - - - - - - - - - - - - -
+
   test 'BF0442',
   'diff_traffic_light' do
     diff_traffic_light_func({'colour'  => 'red'})
@@ -93,12 +116,9 @@ class TrafficLightTests < AppHelpersTestBase
     kata = Object.new
     def kata.id; 'ABCD1234'; end
     avatar = Avatar.new(kata, 'hippo')
-    def avatar.lights; [1]*7; end
-    tag = 3
-    color = 'red'
     light = Tag.new(avatar, {
-      'number' => tag,
-      'colour' => color
+      'number' => (tag = 3),
+      'colour' => (colour = 'red')
     })
     expected = '' +
       '<div' +
@@ -106,10 +126,11 @@ class TrafficLightTests < AppHelpersTestBase
       " data-tip='ajax:traffic_light'" +
       " data-id='ABCD1234'" +
       " data-avatar-name='hippo'" +
+      " data-colour='#{colour}'" +
       " data-was-tag='#{tag - 1}'" +
       " data-now-tag='#{tag}'>" +
-      "<img src='/images/bulb_#{color}.png'" +
-          " alt='#{color} traffic-light'/>" +
+      "<img src='/images/bulb_#{colour}.png'" +
+          " alt='#{colour} traffic-light'/>" +
       '</div>'
     actual = diff_traffic_light(light)
     assert_equal expected, actual

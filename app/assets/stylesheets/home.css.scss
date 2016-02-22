@@ -1,158 +1,91 @@
 
 #home-page {
 
-  font-size: 1.15em;
-
-  margin-top: 25px;
-  margin-left: 0px;
-
-  #globe-container, #custom-container {
-    position: absolute;
-    left: 875px;
-  }
-  #globe-container  { top:  50px; #globe { border: 0; } }
-  #custom-container { top: 350px; }
+  margin: { top: 2px; left: 300px; }
 
   #cyber-dojo {
-    font-family: Impact, Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
-    font-size: 7.4em;
-    color: $text-color;
-    margin-bottom: 0px;
-    padding-bottom: 0px;
-    position: relative;
-    left: 3px;
-    top: -20px;
-  }
-
-  #home-page-logo {
-    display: inline-block;
-    position: relative;
-    top: -50px;
-    right: -35px;
+    @include non-code-font();
+    font-size: 7.54em;
+        color: $text-color;
+       margin: { bottom: 0px; }
+      padding: { bottom: 0px; }
+    .dot-org { font-size: 0.43em; }
   }
 
   #the-place-to-practice-programming {
-    font-family: Impact, Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
-    font-size: 1.15em;
-    color: lighten($text-color, 5%);
-    position: relative;
-    top: -32px;
-    margin-right: 2px;
+    @include non-code-font();
+       margin: { right: 0px; bottom: 3px; }
+    font-size: 1.12em;
+        color: lighten($text-color, 5%);
+     position: relative;
+          top: -9px;
   }
 
-  #learn-more-button {
-    width: 240px;
-    padding-right: 20px;
-    font-family: Impact, Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
-    color: $darker-color;
-    text-align: right;
-    font-size: 0.87em;
+  #avatars-grid {
+       width: 228px;
     position: relative;
-    top: -25px;
-    left: 2px;
-    padding-bottom: 4px;
+        left: 11px;
+         top: -5px;
   }
 
-  .button-td {
-    width: 230px;
-    vertical-align: top;
-  }
-  .button-info-td {
-    vertical-align: center;
-    font-size: 0.7em;
-    width: 160px;
-    &.enter {
-      color: lighten($green, 30%);
-    }
-  }
-  .each {
-    font-style: italic;
-  }
-  .number {
-    width: 15px;
-    height: 15px;
-    display: inline-block;
-    padding: 0px;
-    text-align: center;
-    position: relative;
-    left: 0px;
-    bottom: 5px;
-    @include rounded-corner(10px);
-    background: lighten($darker-color, 20%);
+  #custom-container {
+    position: absolute;
+        left: 675px;
+        top: 350px;
   }
 
-  #enter-id-info {
-    color: lighten($green, 30%);
-  }
-  #kata-id-input {
-    font-family: Impact, Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
-    background: lighten($green, 20%);
-    color: $darker-color;
+  #create-button, #enter-button, #charity-button, #donate-button {
+    @include non-code-font();
     @include font-size-largest();
-    width: 215px;
-    margin: { top: 4px; bottom: 4px; right: 2px; }
-    padding: { right: 20px; bottom: 0px; top: 2px; }
-    text-align: right;
-    @include gradient-lighten($green, 40%, 30%, 20%);
-    @include rounded-corner(6px);
-    position: relative;
-    right: -1px;
-  }
-  #create-button, #enter-button, #reenter-button,  #review-button,
-  #charity-button, #donate-button {
-    width: 240px;
-    padding-right: 20px;
-    font-family: Impact, Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
-    color: $darker-color;
-    @include font-size-largest();
-    margin-left: 10px;
+       padding: { right: 20px; }
+        margin: { left: 10px; }
+         color: $darker-color;
     text-align: right;
   }
-  #review-button { margin-top: 4px; }
 
-  #charity-container, #donate-container, #jon-jagger-container, #accu-container {
-    font-size: 1em;
-    font-size: 0.8em;
+  #create-button, #enter-button {
+          width: 558px;
+      font-size: 2.5em;
+    line-height: 95%;
+        padding: { top: 8px; bottom: 10px; right: 15px; }
+         margin: { bottom: 8px; }
+  }
+
+  #licensing-container, #charity-container, #donate-container {
+    @include plaintext-font();
     @include edged-panel();
-    margin: 10px;
-    width: 280px;
-    text-align: right;
+          width: 300px;
+         margin: { left: 15px; bottom: 12px; }
+        padding: { right: 15px; }
+     text-align: right;
+      font-size: 0.8em;
   }
 
-  #charity-container {
-    #charity-button {
-      width: 100px;
-      font-size: 1.30em;
-      padding: 6px;
-      padding-right: 7px;
-    }
+  #donate-container #donate-button, #charity-container #charity-button {
+          width: 120px;
+         margin: { right: 0px; top: 5px; bottom: 5px; }
+        padding: 6px;
+     text-align: center;
+      font-size: 1.60em;
+    line-height: 95%;
   }
 
-  #donate-container {
-    #donate-button {
-      width: 82px;
-      font-size: 1.70em;
-      padding: 6px;
-      padding-right: 7px;
-    }
+  .dot {
+    color: lighten($darker-color, 25%);
+    &:after { content: '.'; }
   }
 
-  #jon-jagger-container {
-    #jon-jagger-image {
-      width: 70px;
-      border: 5px solid lighten($darker-color, 15%);
-      margin-left: 10px;
-    }
-  }
-
-  #accu-container {
-    #accu-image {
-      padding: 7px;
-      background: CornSilk;
-      width: 65px;
-      height: 20px;
-      margin-left: 10px;
-    }
+  #info {
+    width: 558px;
+    padding: { right: 15px; }
+    @include plaintext-font();
+    @include font-size-tiny();
   }
 
 }
+
+#email-me { color: $lighter-color; }
+
+
+
+

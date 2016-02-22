@@ -1,26 +1,35 @@
-# See comments at end of file
 
 class Language
 
   def initialize(languages, dir_name, test_dir_name, display_name = nil, image_name = nil)
-    @parent = languages
+    @languages = languages
     @dir_name = dir_name
     @test_dir_name = test_dir_name
     @display_name = display_name
     @image_name = image_name
   end
 
-  def path
-    @parent.path + @dir_name + '/' + @test_dir_name + '/'
+  # queries
+
+  attr_reader :languages
+
+  def parent
+    languages
   end
 
-  # required properties
+  def path
+    parent.path + @dir_name + '/' + @test_dir_name + '/'
+  end
+
+  # required manifest properties
 
   def display_name
+    # cached to optimize displaying all languages on cyber-dojo create
     @display_name ||= manifest_property
   end
 
   def image_name
+    # cached to optimize displaying all languages on cyber-dojo create
     @image_name ||= manifest_property
   end
 
@@ -36,7 +45,7 @@ class Language
     Hash[visible_filenames.collect { |filename| [filename, read(filename)] }]
   end
 
-  # optional properties
+  # optional manifest properties
 
   def filename_extension
     manifest_property || ''
@@ -54,27 +63,23 @@ class Language
     manifest_property || 4
   end
 
+  # not manifest properties
+
   def tab
     ' ' * tab_size
   end
 
   def lowlight_filenames
     if highlight_filenames.empty?
-      return ['cyber-dojo.sh', 'makefile', 'Makefile', 'unity.license.txt']
+      ['cyber-dojo.sh', 'makefile', 'Makefile', 'unity.license.txt']
     else
-      return visible_filenames - highlight_filenames
+      visible_filenames - highlight_filenames
     end
   end
-
-  # not manifest properties
 
   def name
     # as stored in the kata's manifest
     display_name.split(',').map(&:strip).join('-')
-  end
-
-  def runnable?
-    runner.runnable?(self)
   end
 
   def colour(output)
@@ -83,13 +88,14 @@ class Language
 
   private
 
-  include ExternalParentChain
+  include ExternalParentChainer
+  include ExternalDir
   include ManifestProperty
 
   def manifest
-    @manifest ||= read_json(manifest_filename)
+    @manifest ||= dir.read_json(manifest_filename)
   rescue StandardError => e
-    message = "read_json(#{manifest_filename}) exception" + "\n" +
+    message = "dir.read_json(#{manifest_filename}) exception" + "\n" +
       'language: ' + path + "\n" +
       ' message: ' + e.message
     fail message

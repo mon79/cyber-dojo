@@ -1,8 +1,8 @@
 #!/bin/bash ../test_wrapper.sh
 
-require_relative './app_model_test_base'
+require_relative './app_models_test_base'
 
-class KataTests < AppModelTestBase
+class KataTests < AppModelsTestBase
 
   test 'F3B8B1',
   'attempting to access a Kata with an invalid is nil' do
@@ -28,80 +28,25 @@ class KataTests < AppModelTestBase
   test '677A57',
   'id reads back as set' do
     id = unique_id
-    kata = make_kata(id)
+    kata = make_kata({ id:id })
     assert_equal id, kata.id
   end
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  test '6F3999',
-  "kata's path has correct format" do
-    kata = make_kata
-    assert correct_path_format?(kata)
-  end
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  test '1E4B7A',
-  'path is split ala git' do
-    kata = make_kata
-    split = kata.id[0..1] + '/' + kata.id[2..-1]
-    assert kata.path.include?(split)
-  end
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   test '66C9AE',
-    'when kata exists but has no avatars' +
+    'when kata has no avatars' +
        ' then it is not active ' +
        ' and its age is zero' do
     kata = make_kata
-    assert kata.exists?
     refute kata.active?
     assert_equal 0, kata.age
   end
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  test '9ECF8D',
-  'start_avatar puts started avatars name into katas started_avatars.json file' do
-    kata = make_kata
-    kata.start_avatar(['hippo'])
-    started = dir_of(kata).read_json('started_avatars.json')
-    assert_equal ['hippo'], started
-    kata.start_avatar(['lion'])
-    started = dir_of(kata).read_json('started_avatars.json')
-    assert_equal %w(hippo lion), started.sort
-  end
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  test '9A1C97',
-    'start_avatar on old dojo that as no started_avatars.json file' +
-       ' reverts to doing dir.exists? for each avatar' do
-    kata = make_kata
-    animals = %w(lion hippo cheetah).sort
-    3.times { kata.start_avatar(animals) }
-    filename = 'started_avatars.json'
-    started = dir_of(kata).read_json(filename)
-    assert_equal animals, started.sort
-
-    # now delete started_avatars.json to simulate old dojo
-    # with started avatars and no started_avatars.json file
-    File.delete(kata.path + filename)
-    refute dir_of(kata).exists?(filename)
-
-    2.times do
-      avatar = kata.start_avatar
-      refute_nil avatar
-      refute dir_of(kata).exists?(filename)
-    end
-  end
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   test 'B9340E',
-    'when kata exists but all its avatars have 0 traffic-lights' +
+    "when kata's avatars have 0 traffic-lights" +
        ' then it is not active ' +
        ' and its age is zero' do
     kata = make_kata
@@ -114,32 +59,22 @@ class KataTests < AppModelTestBase
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   test 'F2CDD3',
-    'when kata exists and at least one avatar has 1 or more traffic-lights' +
+    'when kata has at least one avatar with 1 or more traffic-lights' +
        ' then kata is active ' +
        ' and age is from earliest traffic-light to now' do
     kata = make_kata
+
     hippo = kata.start_avatar(['hippo'])
+    first_time = [2014, 2, 15, 8, 54, 6]
+    DeltaMaker.new(hippo).run_test(first_time)
+
     lion = kata.start_avatar(['lion'])
-    first =
-      {
-        'colour' => 'red',
-        'time'   => [2014, 2, 15, 8, 54, 6],
-        'number' => 1
-      }
-
-    second =
-      {
-        'colour' => 'green',
-        'time'   => [2014, 2, 15, 8, 54, 34],
-        'number' => 2
-      }
-
-    dir_of(hippo).write_json('increments.json', [second])
-    dir_of(lion).write_json('increments.json', [first])
+    second_time = [2014, 2, 15, 8, 54, 34]
+    DeltaMaker.new(lion).run_test(second_time)
 
     assert kata.active?
-    now = first['time']
-    now[seconds = 5] += 17
+    now = first_time
+    now[seconds_slot = 5] += 17
     assert_equal 17, kata.age(now)
   end
 
@@ -157,47 +92,54 @@ class KataTests < AppModelTestBase
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  test 'CE9083',
-  'make_kata saves manifest in kata dir' do
-    kata = make_kata
-    assert dir_of(kata).exists?('manifest.json')
-  end
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   test '6AF51F',
     'kata.id, kata.created, kata.language_name,' +
        'kata.exercise_name, kata.visible_files ' +
        'all read from manifest' do
     language = languages['Java-JUnit']
     exercise = exercises['Fizz_Buzz']
-    now = [2014, 7, 17, 21, 15, 45]
     id = unique_id
+    now = [2014, 7, 17, 21, 15, 45]
     kata = katas.create_kata(language, exercise, id, now)
     assert_equal id, kata.id.to_s
     assert_equal Time.mktime(*now), kata.created
     assert_equal language.name, kata.language.name
     assert_equal exercise.name, kata.exercise.name
+    assert_equal exercise.instructions, kata.visible_files['instructions']
     assert_equal '', kata.visible_files['output']
-    assert kata.visible_files['instructions'].start_with?('Note: The initial code')
+  end
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  test '0A5632',
+  'started_avatars is initially empty array' do
+    @kata = make_kata
+    assert_equal [], avatars_names
+  end
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  test '8BDB48',
+  'start_avatar with name that is not a known avatar is nil' do
+    kata = make_kata
+    assert_nil kata.start_avatar(['sellotape'])
   end
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   test '139C43',
-    'start_avatar with specific avatar-name' +
-       ' (useful for testing) succeeds if avatar has not yet started' do
-    kata = make_kata
-    hippo = kata.start_avatar(['hippo'])
+    'start_avatar with specific name succeeds if avatar has not yet started' do
+    @kata = make_kata
+    hippo = @kata.start_avatar(['hippo'])
+    refute_nil hippo
     assert_equal 'hippo', hippo.name
-    assert_equal ['hippo'], kata.avatars.map(&:name)
+    assert_equal ['hippo'], avatars_names
   end
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   test 'A653FA',
-    'start_avatar with specific avatar-name' +
-       ' (useful for testing) fails if avatar has already started' do
+    'start_avatar with specific name is nil if avatar has already started' do
     kata = make_kata
     kata.start_avatar(['hippo'])
     avatar = kata.start_avatar(['hippo'])
@@ -207,35 +149,65 @@ class KataTests < AppModelTestBase
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   test '4C66C8',
-    'start_avatar with specific avatar-names arg is used' +
-       '(useful for testing)' do
-    kata = make_kata
-    names = %w(panda lion cheetah)
-    panda = kata.start_avatar(names)
-    assert_equal 'panda', panda.name
-    lion = kata.start_avatar(names)
-    assert_equal 'lion', lion.name
-    cheetah = kata.start_avatar(names)
+    'start_avatar with specific names tries them in order' do
+    @kata = make_kata
+    names = %w(cheetah lion panda)
+
+    cheetah = @kata.start_avatar(names)
+    refute_nil cheetah
     assert_equal 'cheetah', cheetah.name
-    assert_nil kata.start_avatar(names)
-    avatars_names = kata.avatars.map(&:name)
-    assert_equal names.sort, avatars_names.sort
+    assert_equal ['cheetah'], avatars_names
+
+    lion = @kata.start_avatar(names)
+    refute_nil lion
+    assert_equal 'lion', lion.name
+    assert_equal ['cheetah','lion'], avatars_names
+
+    panda = @kata.start_avatar(names)
+    refute_nil panda
+    assert_equal 'panda', panda.name
+    assert_equal ['cheetah','lion','panda'], avatars_names
+
+    assert_nil @kata.start_avatar(names)
+    assert_equal names.sort, avatars_names
   end
+
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   test '08141A',
-  'start_avatar succeeds once for each avatar name then fails' do
-    set_git_class 'GitSpy'
+  'start_avatar succeeds once for each avatar name then its full and is nil' do
     kata = make_kata
     created = []
     Avatars.names.length.times do
       avatar = kata.start_avatar
       refute_nil avatar
-      created << avatar
+      created << avatar.name
     end
-    assert_equal Avatars.names.sort, created.collect(&:name).sort
-    avatar = kata.start_avatar
-    assert_nil avatar
+    assert_equal Avatars.names.sort, created.sort
+    assert_nil kata.start_avatar
+  end
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  test 'FE8A3D',
+  'start_avatar starts avatars in random order' do
+    kata = make_kata
+    created = []
+    Avatars.names.length.times do
+      avatar = kata.start_avatar
+      refute_nil avatar
+      created << avatar.name
+    end
+    assert_equal Avatars.names.sort, created.sort
+    refute_equal created, created.sort
+  end
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  private
+
+  def avatars_names
+    @kata.avatars.map(&:name).sort
   end
 
 end

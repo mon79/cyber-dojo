@@ -13,7 +13,7 @@ $(function() {
   $.each(filenames, function(_,filename) {
     var file = cd.fileContentFor(filename);
     cd.bindHotKeys(file);
-    if (filename !== 'output') {
+    if (filename != 'output') {
       cd.tabber(file);
     }
   });
@@ -51,7 +51,6 @@ $(function() {
       <tr class="valign-top">
         <td class="align-right">
           <%= render partial: 'file_new_rename_delete' %>
-          <div></div>
           <%= render partial: 'filename_list' %>
         </td>
         <td>
@@ -61,7 +60,7 @@ $(function() {
     </table>
   </div>
 
-  <%= render partial: 'shared/footer',
+  <%= render partial: 'shared/footer_long',
              locals: {
                 help_url:"http://blog.cyber-dojo.org/2014/10/the-cyber-dojo-test-page.html"
              } %>

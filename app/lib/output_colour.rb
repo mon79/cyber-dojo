@@ -90,6 +90,12 @@ module OutputColour # mix-in
     return :amber
   end
 
+  def self.parse_vhdl_assert(output)
+   return :red   if /assertion failed/.match(output)
+   return :amber if /compilation error/.match(output)
+   return :green
+  end
+
   def self.parse_cassert(output)
     return :red   if /(.*)Assertion(.*)failed./.match(output)
     return :green if /(All|\d*) tests passed/.match(output)
@@ -227,10 +233,19 @@ module OutputColour # mix-in
     return :amber
   end
 
-  def self.parse_jasmine(output)
-    jasmine_pattern = /(\d+) specs?, (\d+) failures?/
-    if match = jasmine_pattern.match(output)
+  def self.parse_javascript_jasmine(output)
+    pattern = /(\d+) specs?, (\d+) failures?/
+    if match = pattern.match(output)
       match[2] == '0' ? :green : :red
+    else
+      :amber
+    end
+  end
+
+  def self.parse_coffeescript_jasmine(output)
+    pattern = /(\d+) test(s?), (\d+) assertion(s?), (\d+) failure(s?), (\d+) skipped/
+    if match = pattern.match(output)
+      match[5] == '0' ? :green : :red
     else
       :amber
     end

@@ -394,7 +394,7 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
     margin: 0;
 }
 
-.ui-dialog { border: 1px dotted $lighter-color; }
+.ui-dialog { border: none; }
 .ui-dialog .ui-dialog-titlebar,
 .ui-dialog .ui-dialog-buttonpane,
 .ui-dialog { color: $lighter-color; }
@@ -441,3 +441,9 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
 .ui-dialog.busy * {
     cursor: wait !important;
 }
+
+.ui-button-text {
+  @include non-code-font();
+  font-size: 13pt !important;
+}
+

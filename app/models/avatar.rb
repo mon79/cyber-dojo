@@ -1,37 +1,37 @@
-# See comments at end of file
 
 class Avatar
 
   def initialize(kata, name)
-    @parent = kata
+    # Does *not* validate.
+    # All access to avatar object must come through dojo.katas[id].avatars[name]
+    @kata = kata
     @name = name
   end
 
-  attr_reader :name
+  # modifier
 
-  def kata
-    @parent
+  def test(delta, files, max_seconds)
+    runner.run(kata.id, name, delta, files, language.image_name, max_seconds)
   end
 
-  def start
-    dir.make
-    git_setup
-    write_manifest(kata.visible_files)
-    git.add(path, manifest_filename)
-    write_increments([])
-    git.add(path, increments_filename)
-    sandbox.start
-    git_commit(0)
+  # queries
+
+  attr_reader :kata, :name
+
+  def parent
+    kata
   end
 
-  def path
-    # The avatar's folder holds its manifest and increments caches
-    kata.path + name + '/'
+  def language
+    # Each avatar does _not_ choose their own language+test.
+    # The language+test is chosen for the _dojo_.
+    # cyber-dojo is a team-based Interactive Dojo Environment,
+    # not an Individual Development Environment
+    kata.language
   end
 
-  def sandbox
-    # The avatar's sandbox holds its source files
-    Sandbox.new(self)
+  def diff(was_tag, now_tag)
+    katas.tag_git_diff(self, was_tag, now_tag)
   end
 
   def active?
@@ -39,7 +39,7 @@ class Avatar
     # instructions. I don't want these avatars appearing on the dashboard.
     # When forking a new kata you can enter as one animal to sanity check
     # it is ok (but not press [test])
-    exists? && !lights.empty?
+    katas.avatar_exists?(self) && !lights.empty?
   end
 
   def tags
@@ -55,98 +55,24 @@ class Avatar
   end
 
   def visible_files
-    read_json(manifest_filename)
+    katas.avatar_visible_files(self)
   end
 
-  def test(delta, files, now = time_now, time_limit = 15)
-    cyber_dojo_sh_updated = update_cyber_dojo_sh(files)
-    sandbox.save_files(delta, files)
-    output = sandbox.run_tests(time_limit)
-    colour = language.colour(output)
-    output = update_output(output, cyber_dojo_sh_updated)
-
-    update_manifest(files, output)
-    rags = update_increments(colour, now)
-    git_commit(rags[-1]['number'])
-
-    [rags, output]
+  def sandbox
+    # An avatar's source files are _not_ held in its own folder
+    # (but in the it's sandbox folder) because its own folder
+    # is used for the manifest.json and increments.json files.
+    Sandbox.new(self)
   end
 
   private
 
-  include ExternalParentChain
+  include ExternalParentChainer
   include TimeNow
-  include UpdateCyberDojoSh
-
-  def git_setup
-    git.init(path, '--quiet')
-    git.config(path, 'user.name ' + user_name)
-    git.config(path, 'user.email ' + user_email)
-  end
-
-  def git_commit(tag)
-    git.commit(path, "-a -m '#{tag}' --quiet")
-    git.gc(path, '--auto --quiet')
-    git.tag(path, "-m '#{tag}' #{tag} HEAD")
-  end
-
-  def user_name
-    "#{quoted(name + '_' + kata.id)}"
-  end
-
-  def user_email
-    "#{quoted(name)}@cyber-dojo.org"
-  end
-
-  def quoted(s)
-    '"' + s + '"'
-  end
-
-  # - - - - - - - - - - - - - - - - -
-
-  def write_manifest(files)
-    # The manifest stores a cache of the avatar's
-    # current visible files - filenames and contents.
-    write_json(manifest_filename, files)
-  end
-
-  def update_manifest(files, output)
-    # output is part of diff state
-    disk[sandbox.path].write('output', output)
-    files['output'] = output
-    write_manifest(files)
-  end
-
-  def manifest_filename
-    'manifest.json'
-  end
-
-  # - - - - - - - - - - - - - - - - -
-
-  def write_increments(increments)
-    # Stores a cache of colours and time-stamps for all the
-    # avatar's current [test]s. Helps optimize the review dashboard.
-    write_json(increments_filename, increments)
-  end
-
-  def update_increments(colour, now)
-    # rags = Reds/Ambers/Greens
-    rags = increments
-    tag = rags.length + 1
-    rags << { 'colour' => colour, 'time' => now, 'number' => tag }
-    write_increments(rags)
-    rags
-  end
 
   def increments
-    read_json(increments_filename)
+    katas.avatar_increments(self)
   end
-
-  def increments_filename
-    'increments.json'
-  end
-
-  # - - - - - - - - - - - - - - - - -
 
   def tag0
     @zeroth ||=
@@ -155,10 +81,6 @@ class Avatar
       'time'   => time_now(kata.created),
       'number' => 0
     }
-  end
-
-  def language
-    kata.language
   end
 
 end
@@ -185,8 +107,8 @@ end
 #   },
 # ]
 #
-# At the moment the only gui action that creates an
-# increments.json file entry is a [test] event.
+# At the moment the only event that creates an
+# increments.json file entry is a [test].
 #
 # However, I may create finer grained tags than
 # just [test] events...
@@ -209,9 +131,10 @@ end
 # always the current length of increments.json (even if
 # that is zero) which is also the latest tag number.
 #
-# The inclusive lower bound for n in avatar.tags[n] is
-# zero. When an animal does a diff of [1] what is run is
-# a diff between
-#   avatar.tags[0] and avatar.tags[1]
+# The inclusive lower bound for n in avatar.tags[n] is zero.
+# When an animal does a diff of [1] what is run is a diff
+# between
+#   avatar.tags[0] and
+#   avatar.tags[1]
 #
 # ------------------------------------------------------

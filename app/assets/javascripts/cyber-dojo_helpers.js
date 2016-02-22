@@ -15,6 +15,26 @@ var cyberDojo = (function(cd, $) {
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+  cd.showReviewUrl = function(id, avatarName, wasTag, nowTag) {
+    return '/review/show/' + id + '?avatar=' + avatarName +
+                                  '&was_tag=' + wasTag +
+                                  '&now_tag=' + nowTag;
+  };
+
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  cd.homePageUrl = function(id) {
+    return '/dojo/index/' + id;
+  };
+
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  cd.td = function(html) {
+ 	  return '<td>' + html + '</td>';
+  };
+
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
   return cd;
 
 })(cyberDojo || {}, $);

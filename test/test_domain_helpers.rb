@@ -3,51 +3,38 @@ module TestDomainHelpers # mix-in
 
   module_function
 
-  include UniqueId
-
   def dojo; @dojo ||= Dojo.new; end
 
   def languages; dojo.languages; end
   def exercises; dojo.exercises; end
-  def katas;     dojo.katas;     end
   def caches;    dojo.caches;    end
-  def disk;      dojo.disk;      end
   def runner;    dojo.runner;    end
+  def katas;     dojo.katas;     end
+  def shell;     dojo.shell;     end
+  def disk;      dojo.disk;      end
+  def log;       dojo.log;       end
   def git;       dojo.git;       end
-  def one_self;  dojo.one_self;  end
 
-  def dir_of(object); disk[object.path]; end
-
-  def make_kata(id = unique_id, language_name = 'C (clang)-assert', exercise_name = 'Fizz_Buzz')
-    language = languages[language_name]
-    exercise = exercises[exercise_name]
-    katas.create_kata(language, exercise, id)
+  def make_kata(hash = {})
+    hash[:id] ||= unique_id
+    hash[:language] ||= default_language_name
+    hash[:exercise] ||= default_exercise_name
+    language = languages[hash[:language]]
+    exercise = exercises[hash[:exercise]]
+    katas.create_kata(language, exercise, hash[:id])
   end
 
-  def stub_test(avatar,param)
-    assert_equal 'RunnerStub', get_runner_class_name
-    stub_test_colours(avatar,param) if param.class.name == 'Array'
-    stub_test_n(avatar,param) if param.class.name == 'Fixnum'
+  def unique_id
+    hex_chars = "0123456789ABCDEF".split(//)
+    Array.new(10) { hex_chars.sample }.shuffle.join
   end
 
-  def stub_test_colours(avatar,colours)
-    root = File.expand_path(File.dirname(__FILE__)) + '/app_lib/test_output'
-    colours.each do |colour|
-      path = "#{root}/#{avatar.kata.language.unit_test_framework}/#{colour}"
-      all_outputs = Dir.glob(path + '/*')
-      filename = all_outputs.shuffle[0]
-      output = File.read(filename)
-      dojo.runner.stub_output(output)
-      delta = { :changed => [], :new => [], :deleted => [] }
-      files = { }
-      rags,_,_ = avatar.test(delta,files)
-      assert_equal colour, rags[-1]['colour'].to_sym
-    end
+  def default_language_name
+    'C (clang)-assert'
   end
 
-  def stub_test_n(avatar, n)
-    colours = (1..n).collect { [:red,:amber,:green].shuffle[0] }
-    stub_test_colours(avatar, colours)
+  def default_exercise_name
+    'Fizz_Buzz'
   end
 
 end

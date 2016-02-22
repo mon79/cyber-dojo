@@ -1,64 +1,106 @@
 
-#setup-page.busy * {
-  cursor: wait !important;
-}
+#setup-page.busy * { cursor: wait !important; }
 
-#setup-page {
+#setup-language-page, #setup-exercise-page {
 
-  margin-top: 25px;
-  margin-left: 35px;
+  margin: { top: 55px; }
+  font-size: 1.15em;
 
-  .filename {
-	  font-size: 11pt;
-  }
-
-  #tests-container {
-	  .filename {
-	    width: 110px;
-	  }
+  #create-a-practice-session {
+    @include non-code-font();
+         color: $lighter-color;
+     font-size: 3.5em;
+    text-align: right;
   }
 
   #languages-container, #tests-container, #exercises-container {
-    height: 475px;
-    padding-right: 3px;
-    margin-right: 5px;
+    @include edged-panel();
+    padding: 10px !important;
+  }
+
+  #languages-list, #tests-list, #exercises-list {
+    @include non-code-font();
+     height: 345px;
+    padding: { right: 3px; }
+     margin: { right: 5px; }
+
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: none;
+    &::-webkit-scrollbar:vertical { width: 6px; }
+
     .filename {
-      padding-right: 20px;
+      @include font-size-medium();
+        padding: { right: 0px; }
+      font-size: 13pt !important;
+          width: 145px;
+      direction: ltr;
+      &[class~='selected'] {
+        font-style: bold;
+             color: darken($lighter-color, 5%);
+      }
     }
   }
 
-  #choose-language, #choose-tests, #choose-exercise {
-    font-family: Impact, Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
-    color: darken($lighter-color, 5%);
+  #language-title, #tests-title, #exercise-title {
+    @include non-code-font();
+    @include font-size-larger();
+         color: darken($lighter-color, 5%);
+        margin: { bottom: 5px; }
+       padding: {   left: 0px; }
+    text-align: right;
+  }
+
+  #ok, #next {
+    @include non-code-font();
     @include font-size-large();
-    margin-bottom: 5px;
+    margin: { top: 5px; }
   }
+}
 
-  #exercises-container, #choose-exercise,
-  #tests-container, #choose-tests {
-    padding-left: 15px;
+// - - - - - - - - - - - - - - - - - - - -
+
+#setup-language-page {
+
+  margin: { left: 250px; }
+
+  #info-container {
+    @include plaintext-font();
+        height: 365px;
+         width: 150px;
+       padding: { left: 100px; }
+    text-align: right;
   }
+}
 
-  #instructions {
-    height: 465px;
-    width: 550px;
-    margin-left: 0px;
-    font-size: 12pt;
-    background: $lighter-color;
-    color: $darker-color;
-    overflow-y: scroll;
-    padding: 5px;
-    border: 0px;
-    outline: none;
-    @include code-font();
+// - - - - - - - - - - - - - - - - - - - -
+
+#setup-exercise-page {
+
+  margin: { left: 216px; }
+
+  #exercises-container {
+
+    padding: 10px !important;
+
+    #exercises-list { width: 165px; }
+
+    #instructions {
+      @include code-font();
+      &::-webkit-scrollbar:vertical { width: 5px; }
+      border-top-left-radius: 5px;
+           width: 450px;
+         padding: 6px;
+       font-size: 10pt;
+           color: $lighter-color;
+      background: lighten($darker-color, 5%);
+          border: none;
+          height: 370px;
+          margin: { left: 0px; }
+      overflow-y: scroll;
+         outline: none;
+          resize: none;
+        position: relative;
+             top: 5px;
+    }
   }
-
-  #create {
-    font-family: Impact, Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
-    @include font-size-largest();
-    margin: { top: 20px; right: 50px; }
-  }
-
 }

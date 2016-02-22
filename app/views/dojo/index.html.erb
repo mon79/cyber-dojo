@@ -2,81 +2,81 @@
 <div id="home-page">
 
   <%= render partial: 'custom' %>
-  <%= render partial: 'globe' %>
 
-  <table class="align-right">
+  <table class="align-right" cellpadding="0" cellspacing="0">
 
     <tr>
-      <td colspan="4">
-        <div id="cyber-dojo">
-          <div id="home-page-logo">
-            <%= raw home_page_logo(35) %>
-          </div>
-          cyber&#8209;dojo.org
-        </div>
+      <td colspan="2">
+        <%= render partial: 'heading' %>
       </td>
     </tr>
 
     <tr>
-      <td rowspan="6" align="right">
-        <%= render partial: 'charity' %><br/>
-        <%= render partial: 'donate' %><br/>
-        <%= render partial: 'accu' %><br/>
-      </td>
-      <td colspan="3">
-        <div id="the-place-to-practice-programming">
-          the place to <a href="http://blog.cyber-dojo.org/2015/05/do-more-deliberate-practice.html" target="_blank">practice</a> programming
-        </div>
+      <td colspan="2">
+        <%= render partial: 'the_place_to_practice_programming' %>
       </td>
     </tr>
 
     <tr>
-      <td colspan="4">
-        <%= render partial: 'learn_more_button' %>
-      </td>
-    </tr>
-
-    <tr>
-      <td class="button-info-td">
-          <span class="number">1</span>
-          <%= raw t :dojo_create %>
-      </td>
-      <td class="button-td">
+      <td colspan="2">
         <%= render partial: 'create_button' %>
       </td>
     </tr>
 
     <tr>
-      <td class="enter button-info-td">
-          <span class="number">2</span>
-          <%= raw t :dojo_type_kataid %>
-      </td>
-      <td class="button-td">
-        <%= render partial: 'enter_id' %>
-      </td>
-    </tr>
-
-    <tr>
-      <td class="button-info-td">
-        <span class="number">3</span>
-        <%= raw t :dojo_enter %>
-      </td>
-      <td class="button-td">
+      <td colspan="2">
         <%= render partial: 'enter_button' %>
       </td>
     </tr>
 
     <tr>
-      <td class="button-info-td">
-        <span class="number">4</span>
-        <%= raw t :dojo_review %>
+      <td rowspan="3">
+        <%= render partial: 'shared/avatar_grid_colour' %>
       </td>
-      <td class="button-td">
-        <%= render partial: 'review_button' %>
+      <td>
+        <%= render partial: 'licensing' %>
       </td>
     </tr>
 
+    <tr>
+      <td>
+        <%= render partial: 'donate' %>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <%= render partial: 'charity' %>
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+        <div id="info">
+          <div>
+            built using
+              <a href="https://www.docker.com/">Docker</a>,
+              <a href="https://www.ruby-lang.org/en/">Ruby</a>,
+              <a href="http://rubyonrails.org/">Rails</a>, and
+              <a href="https://git-scm.com/">Git</a><span class="dot"></span>
+          </div>
+          <div>
+            hosted on
+              <a href="https://cloud.google.com/compute/">Google Compute Engine</a><span class="dot"></span>
+          </div>
+          <div>
+            <a href="https://www.behance.net/NadyaSivers">Nadya Sivers</a>
+            drew the animals<span class="dot"></span>
+          </div>
+          <div>
+            open sourced on
+            <a href="https://github.com/JonJagger/cyber-dojo">github</a><span class="dot"></span>
+          </div>
+        </div>
+      </td>
+    </tr>
   </table>
 </div>
 
-<%= render partial: 'footer' %>
+<%= render partial: 'shared/footer_short',
+    locals: { help_url: "http://blog.cyber-dojo.org/p/learn-more.html" } %>

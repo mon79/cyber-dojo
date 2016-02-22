@@ -1,18 +1,22 @@
-# See comments at end of file
 
 class Languages
   include Enumerable
 
-  def self.cache_filename
-    'languages_cache.json'
+  def initialize(dojo)
+    @dojo = dojo
+    @path = config['root']['languages']
+    caches.write_json_once(cache_filename) { make_cache }
   end
 
-  def initialize(dojo, path)
-    @parent = dojo
-    @path = path
+  # queries
+
+  def path
+    slashed(@path)
   end
 
-  attr_reader :path
+  def parent
+    @dojo
+  end
 
   def each(&block)
     languages.values.each(&block)
@@ -22,25 +26,13 @@ class Languages
     languages[commad(name)] || languages[renamed(name)]
   end
 
-  def refresh_cache
-    cache = {}
-    dir.each_dir do |dir_name|
-      disk[path + dir_name].each_dir do |test_dir_name|
-        language = make_language(dir_name, test_dir_name)
-        cache[language.display_name] = {
-               dir_name: dir_name,
-          test_dir_name: test_dir_name,
-             image_name: language.image_name
-        }
-      end
-    end
-    caches.write_json(self.class.cache_filename, cache)
-  end
+  # modifiers
 
   private
 
-  include ExternalParentChain
+  include ExternalParentChainer
   include LanguagesRename
+  include Slashed
 
   def languages
     @languages ||= read_cache
@@ -48,7 +40,7 @@ class Languages
 
   def read_cache
     cache = {}
-    caches.read_json(self.class.cache_filename).each do |display_name, language|
+    caches.read_json(cache_filename).each do |display_name, language|
            dir_name = language['dir_name']
       test_dir_name = language['test_dir_name']
          image_name = language['image_name']
@@ -57,16 +49,32 @@ class Languages
     cache
   end
 
+  def make_cache
+    cache = {}
+    disk[path].each_dir do |dir_name|
+      disk[path + dir_name].each_dir do |test_dir_name|
+        next if test_dir_name == '_docker_context'
+        language = make_language(dir_name, test_dir_name)
+        cache[language.display_name] = {
+               dir_name: dir_name,
+          test_dir_name: test_dir_name,
+             image_name: language.image_name
+        }
+      end
+    end
+    cache
+  end
+
+  def cache_filename
+    'languages_cache.json'
+  end
+
   def make_language(dir_name, test_dir_name, display_name = nil, image_name = nil)
     Language.new(self, dir_name, test_dir_name, display_name, image_name)
   end
 
   def commad(name)
     name.split('-').join(', ')
-  end
-
-  def caches
-    @parent.caches
   end
 
 end

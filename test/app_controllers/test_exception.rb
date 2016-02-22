@@ -4,6 +4,8 @@ require_relative './app_controller_test_base'
 
 class ExceptionControllerTests < AppControllerTestBase
 
+=begin
+
   def setup
     @consider = Rails.application.config.consider_all_requests_local
     @show = Rails.application.config.action_dispatch.show_exceptions
@@ -16,7 +18,6 @@ class ExceptionControllerTests < AppControllerTestBase
     Rails.application.config.action_dispatch.show_exceptions = @show
   end
 
-=begin
   # these pass when run
   #   $./test_exception.rb
   # but not when run

@@ -13,6 +13,14 @@ class DeltaMaker
 
   attr_reader :was, :now
 
+  def file?(filename)
+    @now.keys.include?(filename)
+  end
+
+  def content(filename)
+    @now[filename]
+  end
+
   def new_file(filename, content)
     refute { file?(filename) }
     @now[filename] = content
@@ -29,10 +37,21 @@ class DeltaMaker
     @now[filename] = content
   end
 
-  def run_test
-    delta = make_delta(@was, @now)
+  def stub_colour(colour)
+    root = File.expand_path(File.dirname(__FILE__)) + '/../app_lib/test_output'
+    path = "#{root}/#{@avatar.kata.language.unit_test_framework}/#{colour}"
+    all_outputs = Dir.glob(path + '/*')
+    filename = all_outputs.sample
+    output = File.read(filename)
+    @avatar.runner.stub_run_output(@avatar, output)
+  end
+
+  def run_test(at = time_now, max_seconds = 15)
     visible_files = now
-    _, output = @avatar.test(delta, visible_files)
+    delta = make_delta(@was, @now)
+    output = @avatar.test(delta, visible_files, max_seconds)
+    colour = @avatar.language.colour(output)
+    @avatar.katas.avatar_ran_tests(@avatar, delta, visible_files, at, output, colour)
     [delta, visible_files, output]
   end
 
@@ -42,9 +61,7 @@ class DeltaMaker
 
   private
 
-  def file?(filename)
-    @now.keys.include?(filename)
-  end
+  include TimeNow
 
   def assert(&pred)
     fail RuntimeError.new('DeltaMaker.assert') unless pred.call

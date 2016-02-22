@@ -1,40 +1,29 @@
-# See comments at end of file
 
 class Kata
 
   def initialize(katas, id)
-    # Does *not* validate id.
-    # All access to kata object must come through katas[id]
-    @parent = katas
+    # Does *not* validate.
+    # All access to kata object must come through dojo.katas[id]
+    @katas = katas
     @id = id
   end
 
-  attr_reader :id
+  # modifiers
 
-  def path
-    @parent.path + outer(id) + '/' + inner(id) + '/'
+  def start_avatar(avatar_names = Avatars.names.shuffle)
+    katas.kata_start_avatar(self, avatar_names)
+  end
+
+  # queries
+
+  attr_reader :katas, :id
+
+  def parent
+    katas
   end
 
   def avatars
     Avatars.new(self)
-  end
-
-  def start_avatar(avatar_names = Avatars.names.shuffle)
-    avatar = nil
-    dir.lock do
-      filename = 'started_avatars.json'
-      started = exists?(filename) ? read_json(filename) : avatars.names
-      free_names = avatar_names - started
-      if free_names != []
-        avatar = Avatar.new(self, free_names[0])
-        avatar.start
-        if exists?(filename)
-          started << avatar.name
-          write_json(filename, started)
-        end
-      end
-    end
-    avatar
   end
 
   def active?
@@ -55,42 +44,34 @@ class Kata
   end
 
   def language
-    dojo.languages[manifest_property]
+    languages[language_name]
   end
 
   def exercise
-    dojo.exercises[manifest_property]
+    exercises[exercise_name]
   end
 
-  def manifest
-    @manifest ||= read_json(manifest_filename)
+  def language_name
+    # used in forker_controller
+    manifest['language']
+  end
+
+  def exercise_name
+    # used in forker_controller
+    manifest['exercise']
   end
 
   private
 
-  include ExternalParentChain
+  include ExternalParentChainer
   include ManifestProperty
-  include IdSplitter
 
-  def manifest_filename
-    'manifest.json'
+  def manifest
+    @manifest ||= katas.kata_manifest(self)
   end
 
   def earliest_light
     Time.mktime(*avatars.active.map { |avatar| avatar.lights[0].time }.sort[0])
   end
 
-  def dojo
-    @parent.dojo
-  end
-
 end
-
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# manifest
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# This is a public method because when fork fails it reports
-# the name of language that could not be forked from.
-# kata.language.name will not work since name is based on
-# display_name which is required and comes from the manifest.json
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

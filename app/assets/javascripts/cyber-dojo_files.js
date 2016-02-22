@@ -19,13 +19,13 @@ var cyberDojo = (function(cd, $) {
     // I tried changing this to...
     //   return $('input:radio[name=filename]:checked').val();
     // (which would remove the need for the file
-    //    app/views/_current_filename.html.erb)
+    //    app/views/kata/_current_filename.html.erb)
     // This worked on Firefox but not on Chrome.
     // The problem seems to be that in Chrome the javascript handler
     // function invoked when the radio button filename is clicked sees
     //    $('input:radio[name=filename]:checked')
     // as having _already_ changed. Thus you cannot retrieve the
-    // old filename. 
+    // old filename.
     return $('#current-filename').val();
   };
 
@@ -37,27 +37,28 @@ var cyberDojo = (function(cd, $) {
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  cd.rebuildFilenameList = function() {
-    var filenameList = $('#filename-list');
-    var filenames = cd.filenames();
-    // output first
-    filenames.splice(filenames.indexOf('output'), 1);
-    filenameList.empty();
-    filenameList.append(cd.makeFileListEntry('output'));
-    filenames.sort();
-    // then highlight filenames
+  cd.sortedFilenames = function(filenames) {
+    var lolights = [];
+    var hilights = [];
     $.each(filenames, function(_, filename) {
-      if (!cd.inArray(filename, cd.lowlightFilenames())) {
-        var fileListEntry = cd.makeFileListEntry(filename);
-        filenameList.append(fileListEntry);
-      }
+      if (cd.inArray(filename, cd.lowlightFilenames()))
+        lolights.push(filename);
+      else if (filename != 'output')
+        hilights.push(filename);
     });
-    // then lowlight filenames
-    $.each(filenames, function(_, filename) {
-      if (cd.inArray(filename, cd.lowlightFilenames())) {
-        var fileListEntry = cd.makeFileListEntry(filename);
-        filenameList.append(fileListEntry);
-      }
+    lolights.sort();
+    hilights.sort();
+    return [].concat(hilights, ['output'], lolights);
+  };
+
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  cd.rebuildFilenameList = function() {
+    var filenames = cd.filenames();
+    var filenameList = $('#filename-list');
+    filenameList.empty();
+    $.each(cd.sortedFilenames(filenames), function(_, filename) {
+      filenameList.append(cd.makeFileListEntry(filename));
     });
     return filenames;
   };
@@ -120,7 +121,7 @@ var cyberDojo = (function(cd, $) {
     });
     // For some reason, setting wrap cannot be done as per the
     // commented out line above... when you create a new file in
-    // FireFox 17.0.1 it still wraps at the textarea width. 
+    // FireFox 17.0.1 it still wraps at the textarea width.
     // So instead I do it like this, which works in FireFox?!
     text.attr('wrap', 'off');
 
@@ -131,15 +132,17 @@ var cyberDojo = (function(cd, $) {
     tr.append(td2);
     table.append(tr);
     div.append(table);
+
     cd.bindHotKeys(text);
     cd.tabber(text);
+
     return div;
   };
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   cd.nonBoringFilenameIndex = function(filenames) {
-    // In << < > >> navigation the current file is
+    // In < > navigation the current file is
     // sometimes not present after the navigation
     // (eg the file has been renamed/deleted).
     // When this happens, try to select a non-boring file.
@@ -162,6 +165,23 @@ var cyberDojo = (function(cd, $) {
   };
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  cd.newFileContent = function(filename, content) {
+    var newFile = cd.makeNewFile(filename, content);
+    $('#visible-files-container').append(newFile);
+    cd.bindLineNumbers(filename);
+    cd.rebuildFilenameList();
+    cd.loadFile(filename);
+  };
+
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  cd.deleteFile = function(filename) {
+    cd.fileDiv(filename).remove();
+    var filenames = cd.rebuildFilenameList();
+    var i = cd.nonBoringFilenameIndex(filenames);
+    cd.loadFile(filenames[i]);
+  };
 
   return cd;
 })(cyberDojo || {}, $);

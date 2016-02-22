@@ -1,68 +1,41 @@
 
-# test runner providing isolation/protection/security
-# via Docker containers https://www.docker.io/
-# and relying on docker volume mounts on host to
-# give /katas/ state access to docker process containers.
-#
-# Comments at end of file
+module DockerRunner # mixin
 
-require_relative './docker_times_out_runner'
-require 'tempfile'
-
-class DockerRunner
-
-  def initialize(bash = Bash.new, cid_filename = Tempfile.new('cyber-dojo').path)
-    @bash = bash
-    @cid_filename = cid_filename
-    raise_if_docker_not_installed
+  def path
+    "#{File.dirname(__FILE__)}/"
   end
 
-  def run(sandbox, command, max_seconds)
-    read_write = 'rw'
-    sandbox_volume = "#{sandbox.path}:/sandbox:#{read_write}"
-    options =
-        ' --net=none' +
-        " -v #{quoted(sandbox_volume)}" +
-        ' -w /sandbox'
-    language = sandbox.avatar.kata.language
-    cmd = timeout(command, max_seconds)
-    times_out_run(options, language.image_name, cmd, max_seconds)
+  def installed?
+    _, exit_status = shell.exec("docker --version > /dev/null #{stderr_2_stdout}")
+    exit_status == shell.success
   end
 
-  private
+  def runnable_languages
+    languages.select { |language| runnable?(language.image_name) }
+  end
 
-  include DockerTimesOutRunner
+  def cache_filename
+    'docker_runner_cache.json'
+  end
+
+  def refresh_cache
+    output, _ = shell.exec('docker images')
+    lines = output.split("\n").select { |line| line.start_with?('cyberdojofoundation') }
+    image_names = lines.collect { |line| line.split[0] }
+    caches.write_json(cache_filename, image_names)
+  end
+
+  module_function
+
+  include ExternalParentChainer
+  include Runner
+
+  def runnable?(image_name)
+    image_names.include?(image_name)
+  end
+
+  def image_names
+    @image_names ||= caches.read_json(cache_filename)
+  end
 
 end
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# "docker run" +
-#    ' --net=none' +
-#    " -v #{quoted(sandbox_volume)}" +
-#    " -w /sandbox" +
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# --net=none
-#
-#   Turn off all networking inside the container.
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# -v #{quoted(sandbox_volume)}
-#
-#   Volume mount the animal's sandbox to /sandbox inside the docker
-#   container as a read-write folder. This provides isolation.
-#   Important to quote the volume incase any paths contain spaces
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# -w /sandbox
-#
-#   Working directory when the command is run is /sandbox
-#   (as volume mounted in the first -v option)
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-

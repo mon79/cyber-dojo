@@ -2,10 +2,10 @@ require 'fileutils'
 
 class HostDir
 
-  def initialize(disk,path)
+  def initialize(disk, path)
     @disk = disk
     @path = path
-    @path += separator unless @path.end_with?(separator)
+    @path += '/' unless @path.end_with?('/')
   end
 
   attr_reader :path
@@ -54,27 +54,7 @@ class HostDir
   end
 
   def read(filename)
-    clean(IO.read(path + filename))
-  end
-
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  def lock(&block)
-    # io locking uses blocking call.
-    # For example, when a player enters a dojo the
-    # controller needs to wait to acquire a lock on
-    # the dojo folder before choosing an avatar.
-    result = nil
-    File.open(path + 'f.lock', 'w') do |fd|
-      if fd.flock(File::LOCK_EX)
-        begin
-          result = block.call
-        ensure
-          fd.flock(File::LOCK_UN)
-        end
-      end
-    end
-    result
+    cleaned(IO.read(path + filename))
   end
 
   private
@@ -83,10 +63,6 @@ class HostDir
 
   def dot?(name)
     name.end_with?('/.') || name.end_with?('/..')
-  end
-
-  def separator
-    @disk.dir_separator
   end
 
 end

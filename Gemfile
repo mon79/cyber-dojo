@@ -4,10 +4,11 @@ gem 'rails',        '4.1'
 gem 'jquery-rails', '2.1.3'
 gem 'sass-rails', "~> 4.0.3"
 gem 'json', '>= 1.8.3'
-gem 'open4', "~> 1.3.4"
+gem 'rake', '10.4.2'
+gem 'minitest', '5.8.1'
+gem 'uuidtools', '>= 2.1.5'
 
 group :test do
-  gem 'minitest', '>= 5.8.0'
   gem 'rspec'
   gem 'shoulda-matchers'
   gem 'capybara', '>= 2.4.4'

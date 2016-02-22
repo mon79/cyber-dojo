@@ -46,6 +46,10 @@ chown www-data:www-data $cyberDojoHome/*
 echo "chown www-data:www-data .*"
 chown www-data:www-data $cyberDojoHome/.*
 
+# - - - - - - - - - - - - - - - - - - - - - - - - -
+# do bundle-install before refreshing the caches
+# in case there is a new dependenciy (eg open4)
+
 echo "deleting the rails cache"
 rm -rf $cyberDojoHome/tmp/*
 
@@ -53,15 +57,14 @@ echo "poking rails"
 rm $cyberDojoHome/Gemfile.lock
 bundle install
 
-echo "refreshing languages/ and ensuring latest docker containers"
-$cyberDojoHome/languages/refresh_cache.rb
+# - - - - - - - - - - - - - - - - - - - - - - - - -
+$cyberDojoHome/caches/refresh_all.sh
 
-echo "refreshing exercises/"
-$cyberDojoHome/exercises/refresh_cache.rb
-
+# - - - - - - - - - - - - - - - - - - - - - - - - -
 echo "restarting apache"
 service apache2 restart
 
+# - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$MY_TIME_STAMP_BEFORE" != "$MY_TIME_STAMP_AFTER" ]; then
   echo ">>>>>>>>> ALERT <<<<<<<<<"
   echo "$0 updated itself!!!"
@@ -69,6 +72,7 @@ if [ "$MY_TIME_STAMP_BEFORE" != "$MY_TIME_STAMP_AFTER" ]; then
   echo ">>>>>>>>> ALERT <<<<<<<<<"
 fi
 
+# - - - - - - - - - - - - - - - - - - - - - - - - -
 echo
 echo "If something went wrong you can revert to the previous version."
 echo "$ git checkout $GIT_SHA1_BEFORE"

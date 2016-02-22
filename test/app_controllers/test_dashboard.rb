@@ -1,18 +1,11 @@
 #!/bin/bash ../test_wrapper.sh
 
 require_relative './app_controller_test_base'
-require_relative './rails_git_spy_thread_adapter'
-require_relative './rails_runner_stub_thread_adapter'
 
 class DashboardControllerTest < AppControllerTestBase
 
   def setup
     super
-    set_git_class('RailsGitSpyThreadAdapter')
-    RailsGitSpyThreadAdapter.reset
-    set_runner_class('RailsRunnerStubThreadAdapter')
-    RailsRunnerStubThreadAdapter.reset
-    runner.stub_output('sdssd')
     create_kata
   end
 
@@ -34,7 +27,7 @@ class DashboardControllerTest < AppControllerTestBase
 
   test 'B4329E',
   'dashboard when avatars with no traffic-lights' do
-    4.times { enter }
+    4.times { start }
     dashboard
   end
 
@@ -42,7 +35,7 @@ class DashboardControllerTest < AppControllerTestBase
 
   test '20AE43',
   'dashboard when avatars with some traffic lights' do
-    3.times { enter; 2.times { run_tests } }
+    3.times { start; 2.times { run_tests } }
     dashboard
   end
 
@@ -57,7 +50,7 @@ class DashboardControllerTest < AppControllerTestBase
 
   test '1AB1FB',
   'heartbeat when avatars with no traffic-lights' do
-    3.times { enter; 2.times { run_tests } }
+    start
     heartbeat
   end
 
@@ -65,8 +58,7 @@ class DashboardControllerTest < AppControllerTestBase
 
   test '674785',
   'heartbeat when some traffic-lights' do
-    enter      # 0
-    run_tests  # 1
+    3.times { start; 2.times { run_tests } }
     heartbeat
   end
 
@@ -81,7 +73,7 @@ class DashboardControllerTest < AppControllerTestBase
 
   test '220619',
   'progress when avatars with no traffic-lights' do
-    enter # 0
+    start # 0
     progress
   end
 
@@ -89,8 +81,8 @@ class DashboardControllerTest < AppControllerTestBase
 
   test '3B04FE',
   'progress when avatar has only amber traffic-lights' do
-    enter # 0
-    stub_test_output(:amber)
+    start # 0
+    runner.stub_run_colour(@avatar, :amber)
     run_tests
     progress
   end

@@ -1,28 +1,29 @@
 
-# See comment at bottom of Avatar.rb
-
 class Tag
 
   def initialize(avatar, hash)
-    @parent = avatar
+    @avatar = avatar
     @hash = hash
   end
 
-  def avatar
-    @parent
+  # queries
+
+  attr_reader :avatar
+
+  def parent
+    avatar
   end
 
   def visible_files
-    @manifest ||= JSON.parse(git.show(path, "#{number}:manifest.json"))
+    @manifest ||= katas.tag_visible_files(avatar, number)
   end
 
   def output
-    # Very early dojos didn't store output in initial commit
+    # Very early dojos didn't store output in initial tag 0
     visible_files['output'] || ''
   end
 
   def time
-    # todo: times ?need? to come from browser and use iso8601
     Time.mktime(*hash['time'])
   end
 
@@ -50,12 +51,8 @@ class Tag
 
   private
 
-  include ExternalParentChain
+  include ExternalParentChainer
 
   attr_reader :hash
-
-  def path
-    @parent.path
-  end
 
 end

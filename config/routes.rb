@@ -18,14 +18,20 @@ CyberDojo::Application.routes.draw do
 
   scope path: '/dojo', controller: :dojo do
     get 'index(/:id)' => :index
-    get 'check'       => :check,    :constraints => { :format => :json }
-    get 'enter'       => :enter,    :constraints => { :format => :json }
-    get 're_enter'    => :re_enter, :constraints => { :format => :json }
   end
 
   scope path: '/setup', controller: :setup do
-    get 'show(/:id)' => :show
+    get 'show_languages_and_tests(/:id)' => :show_languages_and_tests
+    get 'show_exercises(/:id)' => :show_exercises
     get 'save' => :save, :constraints => { :format => :json }
+  end
+
+  scope path: '/enter', controller: :enter do
+    get 'show(/:id)' => :show
+    get 'check'      => :check,    :constraints => { :format => :json }
+    get 'start'      => :start,    :constraints => { :format => :json }
+    get 'continue'   => :continue, :constraints => { :format => :json }
+
   end
 
   scope path: '/kata', controller: :kata do
@@ -40,17 +46,18 @@ CyberDojo::Application.routes.draw do
     get 'heartbeat'  => :heartbeat, :constraints => { :format => :json }
   end
 
+  scope path: '/review', controller: :review do
+    get 'show(/:id)' => :show
+  end
+
   scope path: '/tipper', controller: :tipper do
-    get 'traffic_light_tip' =>
-      :traffic_light_tip, :constraints => { :format => :json }
-    get 'traffic_light_count_tip' =>
-      :traffic_light_count_tip, :constraints => { :format => :json }
+    get 'traffic_light_tip' => :traffic_light_tip, :constraints => { :format => :json }
   end
 
 
-  get 'differ/diff' => 'differ#diff', :constraints => { :format => :json }
+  get 'differ/diff'       => 'differ#diff',     :constraints => { :format => :json }
   get 'forker/fork(/:id)' => 'forker#fork'
-  get 'reverter/revert' => 'reverter#revert', :constraints => { :format => :json }
+  get 'reverter/revert'   => 'reverter#revert', :constraints => { :format => :json }
 
   get 'downloader/download(/:id)' => 'downloader#download'
 

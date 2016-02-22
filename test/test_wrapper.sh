@@ -6,17 +6,17 @@ if [ "$#" -eq 0 ]; then
   echo
   echo '  How to use test_wrapper.sh'
   echo
-  echo '  1. running a single test'
+  echo '  1. running specific tests in one folder'
   echo "     $ cd $cyberDojoHome/test/app_model"
-  echo '     $ ./avatar_test.rb <ARGS>'
+  echo '     $ ./run.sh <ID*>'
   echo
   echo '  2. running all the tests in one folder'
   echo "     $ cd $cyberDojoHome/app_model"
-  echo '     $ ./run_all.sh <ARGS>'
+  echo '     $ ./run.sh'
   echo
   echo '  3. running all the tests in all the folders'
   echo "     $ cd $cyberDojoHome"
-  echo '     $ ./run_all.sh <ARGS>'
+  echo '     $ ./run.sh'
   echo
   exit
 fi
@@ -70,10 +70,11 @@ cat ${testFiles[*]} | tail -n +2 >> $wrapped_filename
 gitUserNameBefore=`git config user.name`
 
 rm -rf ../../coverage/.resultset.json
-wrapper_test_log='WRAPPER.log.tmp'
+mkdir -p coverage
+wrapper_test_log='coverage/WRAPPER.log.tmp'
 ruby $wrapped_filename -- ${args[*]} 2>&1 | tee $wrapper_test_log
 rm $wrapped_filename
-cp -R ../../coverage/* .
+cp -R ../../coverage .
 #pwd                       # eg  /var/www/cyber-dojo/test/app_lib
 cwd=${PWD##*/}             # eg  app_lib
 module=${cwd/_//}          # eg  app/lib

@@ -1,60 +1,55 @@
-# See comments at end of file
 # See cyber-dojo-model.pdf
 
 class Dojo
 
-  def languages; @languages ||= Languages.new(self, env_root); end
-  def exercises; @exercises ||= Exercises.new(self, env_root); end
-  def katas    ; @katas     ||=     Katas.new(self, env_root); end
-  def caches   ; @caches    ||=    Caches.new(self, env_root); end
+  def root_dir
+    File.expand_path('../..', File.dirname(__FILE__))  # /var/www/cyber-dojo
+  end
 
-  def runner  ; @runner   ||= env_object('DockerRunner').new      ; end
-  def disk    ; @disk     ||= env_object('HostDisk'    ).new      ; end
-  def git     ; @git      ||= env_object('HostGit'     ).new      ; end
-  def one_self; @one_self ||= env_object('CurlOneSelf' ).new(disk); end
+  def config_filename
+    root_dir + '/config/cyber-dojo.json'
+  end
+
+  def config
+    @config ||= JSON.parse(IO.read(config_filename))
+  end
+
+  def languages; @languages ||= Languages.new(self); end
+  def exercises; @exercises ||= Exercises.new(self); end
+  def    caches; @caches    ||=    Caches.new(self); end
+
+  def    runner;    @runner ||= external_object; end
+  def     katas;     @katas ||= external_object; end
+  def     shell;     @shell ||= external_object; end
+  def      disk;      @disk ||= external_object; end
+  def       log;       @log ||= external_object; end
+  def       git;       @git ||= external_object; end
 
   private
 
-  def env_root
-    default = "/var/www/cyber-dojo/#{name_of(caller)}"
-    root = ENV['CYBER_DOJO_' + name_of(caller).upcase + '_ROOT'] || default
-    root + (root.end_with?('/') ? '' : '/')
-  end
+  include NameOfCaller
 
-  def env_object(default)
-    var = 'CYBER_DOJO_' + name_of(caller).upcase + '_CLASS'
-    Object.const_get(ENV[var] || default)
-  end
-
-  def name_of(caller)
-    (caller[0] =~ /`([^']*)'/ && $1)
+  def external_object
+    key = name_of(caller)
+    var = config['class'][key]
+    Object.const_get(var).new(self)
   end
 
 end
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# External paths/class-names can be set via environment variables.
-#
-# CYBER_DOJO_LANGUAGES_ROOT
-# CYBER_DOJO_EXERCISES_ROOT
-# CYBER_DOJO_KATAS_ROOT
-# CYBER_DOJO_CACHES_ROOT
-#
-# CYBER_DOJO_RUNNER_CLASS
-# CYBER_DOJO_DISK_CLASS
-# CYBER_DOJO_GIT_CLASS
-# CYBER_DOJO_ONE_SELF_CLASS
+# External paths can be set via the config file.
+# External objects can be set via the config file.
 #
 # The main reason for this arrangement is testability.
 # For example, I can run controller tests by setting the
-# environment variables, then run the test which issue
-# a GET/POST, let the call work its way through the rails stack,
-# eventually reaching Dojo.rb where it creates
-# Disk/Runner/Git/OneSelf objects as named in the ENV[]
-# I cannot see how how I do this using Parameterize-From-Above
-# since I know of no way to 'tunnel' the parameters 'through'
-# the rails stack.
+# config, then run the test which issue a GET/POST,
+# let the call work its way through the rails stack,
+# eventually reaching dojo.rb where it creates
+# Disk/Runner/Git/Shell/etc objects as named in the config.
 #
-# It also allows me to do polymorphic testing, viz to rerun
-# the *same* test under different environments.
+# The external objects are held using
+#    @name ||= ...
+# I use ||= partly for optimization and partly for testing
+# (where it is handy that it is the same object)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
